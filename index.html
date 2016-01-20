@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<!-- HTML HEAD -->
+<head>
+	<title></title>
+	
+	<!-- CSS -->
+	<style type="text/css">
+
+	</style>
+
+	<!-- INCLUDED SCRIPTS -->
+	<script type="text/javascript" src="js/peer.min.js"></script>
+    <script src="vendor/jquery.min.js"></script>
+    <script src="vendor/jquery-textrange.js"></script>
+    <script src="bower_components/jsdiff/diff.js"></script>
+
+	<h1>Live Editor (Google Docs) using WebRTC</h1>
+
+</head>
+
+<!-- MAIN SCRIPT -->
+<script>
+	var conn;
+	var peer = new Peer({key: 'gb47i8kw1ihbmx6r'});
+    var  editor_textarea2;
+
+	peer.on("open", function(id) {
+		document.getElementById("myID").innerHTML = id;
+	})
+
+	peer.on("connection", connect);
+
+	function connect(c) {
+		conn = c;
+		$("#peerID").val(conn.peer);
+		$("#progBar").val("100");
+		conn.on('data',function(data) {
+            console.error("ondatachange");
+			$('#inputTxt').val($('#inputTxt').val()+data);
+		});
+		conn.on('disconnect', disconnect);
+	}
+
+	function disconnect(){
+		alert('Disconnected from the server!');
+		$('#peerID').val("");
+		$('#progBar').val("0");
+		$('#inputTxt').val("");
+	}
+
+//////
+    var log = console.log.bind(console);
+
+    var memoryX = "";
+    var changes = [];
+    var interval;
+
+    /*{
+     position: 81,
+     start: 81,
+     end: 81,
+     length: 0,
+     text: ""
+     }*/
+
+    function append_change(){
+        var new_data = $(this).val();
+        log(new_data);
+        var selection = $(this).textrange();
+        log(selection);
+        var val = editor_textarea2.val();
+        console.error(new_data, val);
+        var difflines = JsDiff.diffLines(val, new_data);
+        var diffchars = JsDiff.diffChars(val, new_data);
+        // log(difflines);
+        // log(diffchars);
+        var diffpatch = JsDiff.createPatch("fileName",val, new_data);
+        log(diffpatch);
+        changes.push(diffpatch);
+    }
+
+    function handle_changes(){
+        var i;
+        var val = editor_textarea2.val();
+        for(i=0; i<changes.length; i++){
+            var change = changes.shift();
+            console.error("memoryX===>",val,change);
+            val = JsDiff.applyPatch(val || "", change);
+        }
+        console.error("final - memoryX===<",val);
+        editor_textarea2.val(val);
+    }
+
+    function update_memory(new_data){
+        memoryX = new_data; //This will eventually be more efficient
+    }
+
+
+    //////
+
+
+
+</script>
+
+<!-- HTML BODY -->
+<body>
+	Your ID: <span id="myID"></span>
+	<br></br>
+
+	Connect to Peer: 	<input id="peerID" type="text" placeholder="(Enter peer's ID)">
+						<input id="connect" type="button" value="connect">
+						<input id="disconnect" type="button" value="disconnect"> <br></br>
+
+	<progress id="progBar" max="100" value="0"></progress>
+	</br></br>
+    <table>
+        <tr>
+            <td>
+                <textarea id="inputTxt" rows=30 ></textarea>
+            </td><td>
+                <textarea id="inputTxt2" rows=30></textarea>
+            </td>
+        </tr>
+        </table>
+
+
+</body>
+
+<script>
+
+    $(document).ready(function() {
+        $("#connect").click(function() {
+            $("#progBar").val("50")
+            var c = peer.connect($('#peerID').val());
+            c.on('open', function() {
+                connect(c);
+            });
+        });
+
+//        $("#inputTxt").keypress(function(e){
+//            var ev = e || window.event;
+//            var asciiKey = ev.keyCode || ev.which;
+//            text = String.fromCharCode(asciiKey);
+//            if(conn){
+//                conn.send(text);
+//            } else {
+//                console.error("No Connection")
+//            }
+//        });
+
+        $('#disconnect').click(function(){
+            $("#progBar").val("50");
+            disconnect();
+        });
+
+
+        ////
+        var editor_textarea = $('#inputTxt');
+        editor_textarea2 = $('#inputTxt2');
+        lines = editor_textarea.val().split("\n"); //TODO handle carrage returns (fuckin windoze)
+        editor_textarea.on('keyup', append_change);
+        interval = setInterval(handle_changes, 500);
+        memoryX = editor_textarea.val();
+
+    });
+
+</script>
+
+</html>

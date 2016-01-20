@@ -1,0 +1,12 @@
+{
+    "name": "root/live-text-editor_peer-js",
+    "authors": [
+        {
+            "name": "Lalit Tanwar",
+            "email": "lalit.tanwar07@gmail.com"
+        }
+    ],
+    "require": {
+        "firebase/token-generator": "^3.0"
+    }
+}

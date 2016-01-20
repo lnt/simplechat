@@ -1,0 +1,20 @@
+{
+  "name": "LiveTextEditor_PeerJs",
+  "version": "0.0.0",
+  "homepage": "https://github.com/gsinghware/LiveTextEditor_PeerJs",
+  "authors": [
+    "Lalit Tanwar <lalit.tanwar07@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jsdiff": "~2.2.1",
+    "firechat": "~2.0.1"
+  }
+}
